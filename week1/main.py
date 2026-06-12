@@ -25,10 +25,12 @@ handler.setFormatter(EmojiFormatter("%(asctime)s |%(levelname)s |%(message)s"))
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 
-SOURCE_DIR = Path("data/0_source")
-BRONZE_DIR = Path("data/1_bronze")
-SILVER_DIR = Path("data/2_silver")
-GOLD_DIR = Path("data/3_gold")
+BASE_DIR = Path(__file__).resolve().parent
+
+SOURCE_DIR = BASE_DIR / "data" / "0_source"
+BRONZE_DIR = BASE_DIR / "data" / "1_bronze"
+SILVER_DIR = BASE_DIR / "data" / "2_silver"
+GOLD_DIR = BASE_DIR / "data" / "3_gold"
 DB_NAME = "jobs.db"
 
 def run_profiler():
