@@ -1,0 +1,1 @@
+SELECT source_id, job_title, company, description FROM jobs;
