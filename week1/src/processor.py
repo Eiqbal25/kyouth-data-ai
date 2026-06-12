@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from bs4 import BeautifulSoup
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, ValidationError
 
 
 class JobListing(BaseModel):
@@ -12,6 +12,13 @@ class JobListing(BaseModel):
     job_title: str
     company: str
     description: str
+
+    @field_validator("source_id", "job_title", "company", "description")
+    @classmethod
+    def not_empty(cls, value, info):
+        if not value or not value.strip():
+            raise ValueError(f"{info.field_name} is empty")
+        return value
 
 
 def process_all_html(input_dir, output_dir):
@@ -67,28 +74,19 @@ def process_all_html(input_dir, output_dir):
                 description = desc_tag.get_text(separator=" ", strip=True)
                 description = re.sub(r"\s+", " ", description).strip()
 
-            missing = []
-            if not source_id:
-                missing.append("source_id")
-            if not job_title:
-                missing.append("job_title")
-            if not company:
-                missing.append("company")
-            if not description:
-                missing.append("description")
-
-            if missing:
-                for field in missing:
+            try:
+                job = JobListing(
+                    source_id=source_id,
+                    job_title=job_title,
+                    company=company,
+                    description=description,
+                )
+            except ValidationError as e:
+                for err in e.errors():
+                    field = err["loc"][0]
                     logging.warning(f"Missing {field} in: {html_file.name}")
                 skipped += 1
                 continue
-
-            job = JobListing(
-                source_id=source_id,
-                job_title=job_title,
-                company=company,
-                description=description,
-            )
 
             output_file = output_dir / f"{job.source_id}.json"
             with open(output_file, "w", encoding="utf-8") as f:
