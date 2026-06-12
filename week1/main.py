@@ -8,11 +8,11 @@ from src.profiler import run_data_profile
 
 class EmojiFormatter(logging.Formatter):
     EMOJIS = {
-        "DEBUG": "🐛",
-        "INFO": "ℹ️",
-        "WARNING": "⚠️",
-        "ERROR": "❌",
-        "CRITICAL": "🔥",
+        "DEBUG": "",
+        "INFO": "",
+        "WARNING": "⚠️ ",
+        "ERROR": "❌ ",
+        "CRITICAL": "🔥 ",
     }
 
     def format(self, record):
@@ -21,7 +21,7 @@ class EmojiFormatter(logging.Formatter):
 
 
 handler = logging.StreamHandler()
-handler.setFormatter(EmojiFormatter("%(asctime)s |%(levelname)s |%(message)s"))
+handler.setFormatter(EmojiFormatter("%(asctime)s %(levelname)s%(message)s"))
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 

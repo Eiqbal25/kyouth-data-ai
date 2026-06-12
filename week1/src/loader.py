@@ -4,6 +4,8 @@ import hashlib
 import logging
 from pathlib import Path
 
+SUCCESS_ICON = "\u2705"
+SKIP_ICON = "\u23ed\ufe0f"
 
 def load_sql(filename):
     """Load a .sql file from the project's queries/ folder."""
@@ -77,7 +79,7 @@ def load_all_jsons(input_dir, output_dir):
 
             if cursor.rowcount == 1:
                 connection.commit()
-                logging.info(f"Inserted: {data['job_title']}")
+                logging.info(f"{SUCCESS_ICON} Inserted: {data['job_title']}")
                 inserted += 1
                 continue
 
@@ -92,14 +94,14 @@ def load_all_jsons(input_dir, output_dir):
                     (data["job_title"], data["company"], data["description"], content_hash, data["source_id"]),
                 )
                 connection.commit()
-                logging.info(f"Updated (content changed): {data['job_title']}")
+                logging.info(f"{SUCCESS_ICON} Updated (content changed): {data['job_title']}")
                 inserted += 1  # counted as a successful write
             else:
-                logging.info(f"Skipped (duplicate): {json_file.name}")
+                logging.info(f"{SKIP_ICON} Skipped (duplicate): {data['job_title']}")
                 skipped += 1
 
         except Exception as e:
-            logging.error(f"Failed to load {json_file.name} | Reason: {e}")
+            logging.warning(f"Failed to load {json_file.name} | Reason: {e}")
             skipped += 1
 
     connection.close()

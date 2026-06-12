@@ -104,21 +104,6 @@ def _extract_text_by_automation(
     )
 
 
-def _missing_fields(values: dict[str, str]) -> list[str]:
-    return [
-        field_name for field_name, value in values.items() if not _clean_text(value)
-    ]
-
-
-def _validation_missing_fields(error: ValidationError) -> list[str]:
-    fields: list[str] = []
-    for error_detail in error.errors():
-        location = error_detail.get("loc", ())
-        if location:
-            fields.append(str(location[0]))
-    return fields
-
-
 def _extract_listing_values(html_path: Path) -> dict[str, str]:
     html = html_path.read_text(encoding="utf-8", errors="replace")
     soup = BeautifulSoup(html, "html.parser")
@@ -143,15 +128,11 @@ def process_html(html_path: Path, output_dir: Path) -> ProcessResult:
     except Exception as error:
         return ProcessResult(html_path, None, "skipped", f"read_error: {error}")
 
-    missing_fields = _missing_fields(values)
-    if missing_fields:
-        return ProcessResult(html_path, None, "skipped", ", ".join(missing_fields))
-
     try:
         listing = JobListing(**values)
     except ValidationError as error:
-        validation_fields = _validation_missing_fields(error)
-        reason = ", ".join(validation_fields) if validation_fields else "validation"
+        fields = [str(err["loc"][0]) for err in error.errors() if err.get("loc")]
+        reason = ", ".join(fields) if fields else "validation"
         return ProcessResult(html_path, None, "skipped", reason)
 
     output_path.write_text(
@@ -168,19 +149,9 @@ def _log_result(result: ProcessResult) -> None:
 
     reason = result.reason or "unknown reason"
     if reason.startswith("read_error:"):
-        logging.warning(
-            "%s Skipped: %s (%s)",
-            WARNING_ICON,
-            result.source_path.name,
-            reason,
-        )
+        logging.warning("Skipped: %s (%s)", result.source_path.name, reason)
     else:
-        logging.warning(
-            "%s Missing %s in: %s",
-            WARNING_ICON,
-            reason,
-            result.source_path.name,
-        )
+        logging.warning("Missing %s in: %s", reason, result.source_path.name)
 
 
 def _print_summary(results: list[ProcessResult]) -> None:

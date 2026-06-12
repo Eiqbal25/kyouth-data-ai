@@ -3,6 +3,7 @@ import re
 import logging
 from pathlib import Path
 
+SUCCESS_ICON = "\u2705"
 
 def load_sql(filename):
     """Load a .sql file from the project's queries/ folder."""
@@ -55,7 +56,7 @@ def run_data_profile(db_path):
             logging.warning(f"Marked LOW quality: {source_id} | {job_title}")
             low_count += 1
         else:
-            logging.info(f"Marked HIGH quality: {source_id} | {job_title}")
+            logging.info(f"{SUCCESS_ICON} Marked HIGH quality: {source_id} | {job_title}")
             high_count += 1
 
     connection.commit()

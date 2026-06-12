@@ -3,6 +3,7 @@ import quopri
 import logging
 from pathlib import Path
 
+INFO_ICON = "\u2139\ufe0f"  # ℹ️
 
 def ingest_all_mhtml(input_dir, output_dir):
     input_dir = Path(input_dir)
@@ -57,7 +58,7 @@ def ingest_all_mhtml(input_dir, output_dir):
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
-            logging.info(f"Extracted: {mhtml_file.name}")
+            logging.info(f"{INFO_ICON} Extracted: {mhtml_file.name}")
             extracted += 1
 
         except Exception as e:
