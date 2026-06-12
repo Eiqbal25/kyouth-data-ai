@@ -47,9 +47,12 @@ def run_bronze():
 def run_all():
     run_bronze()
     print()
+    print()
     run_silver()
     print()
+    print()
     run_gold()
+    print()
     print()
     run_profiler()
 
@@ -62,7 +65,7 @@ commands = {
 }
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
+    if len(sys.argv) != 2 or sys.argv[1] not in commands:
         print("Usage: python main.py [ingest|process|load|profile|all]")
         return
     commands[sys.argv[1]]()

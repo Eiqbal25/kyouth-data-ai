@@ -3,7 +3,12 @@ import re
 import logging
 from pathlib import Path
 
-from src.db_utils import load_sql
+
+def load_sql(filename):
+    """Load a .sql file from the project's queries/ folder."""
+    path = Path(__file__).resolve().parent.parent / "queries" / filename
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
 
 
 def determine_quality(job_title, company, description):
@@ -60,6 +65,7 @@ def run_data_profile(db_path):
     connection.commit()
 
     # --- Now print the report, last ---
+    print()
     print("--- 🔍 DATA QUALITY REPORT ---")
 
     cursor.execute(load_sql("count_jobs.sql"))
