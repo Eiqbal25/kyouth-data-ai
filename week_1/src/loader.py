@@ -101,7 +101,7 @@ def load_all_jsons(input_dir, output_dir):
                 skipped += 1
 
         except Exception as e:
-            logging.warning(f"Failed to load {json_file.name} | Reason: {e}")
+            logging.warning(f"Failed to load {json_file.name} | Reason: {e}")                                                       
             skipped += 1
 
     connection.close()
