@@ -183,7 +183,7 @@ This shows the pipeline can be safely re-run without creating duplicate rows.
 ## Project Structure
 
 ```
-week1/
+week_1/
 ├── data/
 │   ├── 0_source/          # original .mhtml files (input)
 │   ├── 1_bronze/          # raw extracted HTML
