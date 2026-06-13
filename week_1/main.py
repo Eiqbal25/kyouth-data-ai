@@ -21,9 +21,12 @@ class EmojiFormatter(logging.Formatter):
 
 
 handler = logging.StreamHandler()
-handler.setFormatter(EmojiFormatter("%(asctime)s %(levelname)s%(message)s"))
-logging.basicConfig(level=logging.INFO, handlers=[handler])
+handler.setFormatter(EmojiFormatter("%(asctime)s |%(levelname)s |%(message)s"))
 
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[handler]
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 
