@@ -173,9 +173,9 @@ def process_all_html(input_dir, output_dir) -> None:
     print(f"{SILVER_ICON} Silver: Processing HTML files...")
 
     if not input_path.exists():
-        logging.warning("%s Source directory not found: %s", WARNING_ICON, input_path)
+        logging.warning("Source directory not found: %s", input_path)
     elif not input_path.is_dir():
-        logging.warning("%s Source path is not a directory: %s", WARNING_ICON, input_path)
+        logging.warning("Source path is not a directory: %s", input_path)
 
     results: list[ProcessResult] = []
     for html_path in _iter_html_files(input_path):
