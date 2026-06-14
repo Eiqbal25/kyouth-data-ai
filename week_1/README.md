@@ -27,7 +27,7 @@ By the end, I have a SQLite database (`jobs.db`) containing 84 valid job listing
 1. **Clone this repository**
    ```bash
    git clone https://github.com/Eiqbal25/kyouth-data-ai.git
-   cd kyouth-data-ai/week1
+   cd kyouth-data-ai/week_1
    ```
 
 2. **Install `uv`**
