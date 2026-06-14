@@ -79,7 +79,7 @@ def load_all_jsons(input_dir, output_dir):
 
             if cursor.rowcount == 1:
                 connection.commit()
-                logging.info(f"{SUCCESS_ICON} Inserted: {data['job_title']}")
+                logging.info(f"{SUCCESS_ICON} Inserted: {json_file.name}")
                 inserted += 1
                 continue
 
@@ -94,10 +94,10 @@ def load_all_jsons(input_dir, output_dir):
                     (data["job_title"], data["company"], data["description"], content_hash, data["source_id"]),
                 )
                 connection.commit()
-                logging.info(f"{SUCCESS_ICON} Updated (content changed): {data['job_title']}")
+                logging.info(f"{SUCCESS_ICON} Updated (content changed): {json_file.name}")
                 inserted += 1  # counted as a successful write
             else:
-                logging.info(f"{SKIP_ICON} Skipped (duplicate): {data['job_title']}")
+                logging.info(f"{SKIP_ICON} Skipped (duplicate): {json_file.name}")
                 skipped += 1
 
         except Exception as e:
