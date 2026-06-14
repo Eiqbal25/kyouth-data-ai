@@ -10,6 +10,12 @@ I followed the **Medallion Architecture** pattern, which basically means organiz
 - **Silver** (`data/2_silver/`) — cleaned up data, with only the important fields (job title, company, description, etc.) saved as JSON
 - **Gold** (`data/3_gold/jobs.db`) — the final database where everything lives, ready for querying
 
+This pipeline follows the **ETL** pattern — **Extract, Transform, Load**:
+
+- **Extract** — `ingest` reads the raw `.mhtml` files and extracts the HTML content (Bronze layer)
+- **Transform** — `process` parses the HTML, pulls out the important fields, validates them with Pydantic, and saves clean JSON (Silver layer)
+- **Load** — `load` takes the clean JSON and inserts it into a SQLite database, with duplicate detection and content hashing (Gold layer)
+
 By the end, I have a SQLite database (`jobs.db`) containing 84 valid job listings, each labeled as `HIGH` or `LOW` quality, plus a small report showing stats about the data.
 
 ---
