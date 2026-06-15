@@ -1,3 +1,6 @@
 .env
 .venv
 __pycache__/
+data/jobs_d1.db
+data/resume_d3.txt
+data/*.db
