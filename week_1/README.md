@@ -10,6 +10,12 @@ I followed the **Medallion Architecture** pattern, which basically means organiz
 - **Silver** (`data/2_silver/`) — cleaned up data, with only the important fields (job title, company, description, etc.) saved as JSON
 - **Gold** (`data/3_gold/jobs.db`) — the final database where everything lives, ready for querying
 
+This pipeline follows the **ETL** pattern — **Extract, Transform, Load**:
+
+- **Extract** — `ingest` reads the raw `.mhtml` files and extracts the HTML content (Bronze layer)
+- **Transform** — `process` parses the HTML, pulls out the important fields, validates them with Pydantic, and saves clean JSON (Silver layer)
+- **Load** — `load` takes the clean JSON and inserts it into a SQLite database, with duplicate detection and content hashing (Gold layer)
+
 By the end, I have a SQLite database (`jobs.db`) containing 84 valid job listings, each labeled as `HIGH` or `LOW` quality, plus a small report showing stats about the data.
 
 ---
@@ -102,7 +108,7 @@ It will print out progress for each step, something like this (shortened):
 
 ```
 🥉 Bronze: Ingesting MHTML files...
-ℹ️ Extracted: <job title>.mhtml
+✅ Extracted: <job title>.mhtml
 ...
 📊 Bronze Summary:
 Total: 100 | Extracted: 100 | Failed: 0
@@ -115,7 +121,8 @@ Total: 100 | Extracted: 100 | Failed: 0
 Total: 100 | Processed: 84 | Skipped: 16
 
 🥇 Gold: Loading JSON files...
-✅ Inserted: <job title>
+✅ Inserted: <job title>.json
+⏭️ Skipped (duplicate): <job title>.json
 ...
 📊 Gold Summary:
 Total: 84 | Inserted: 84 | Skipped: 0
@@ -149,7 +156,7 @@ This shows the pipeline can be safely re-run without creating duplicate rows.
 
 ### Bonus features I added
 
-- **Logging** — instead of just plain `print()`, I used Python's `logging` module with a custom formatter that shows timestamps and emoji indicators (✅ success, ⚠️ warning, ❌ error, ⏭️ skipped duplicate, ℹ️ info) instead of plain INFO/WARNING/ERROR text. This makes it easier to scan the output and spot problems at a glance.
+- **Logging** — instead of just plain `print()`, I used Python's `logging` module with a custom `EmojiFormatter` that shows timestamps and emoji indicators (✅ success, ⚠️ warning, ❌ error, ⏭️ skipped duplicate) instead of plain INFO/WARNING/ERROR text.
 - **Content hashing** — each record gets a "fingerprint" (a hash) based on its title, company, and description. If the same job listing is processed again but the content changed, the database updates it instead of just ignoring it.
 - **SQL files** — instead of writing SQL queries directly inside the Python files, I put them in a `queries/` folder as `.sql` files and load them when needed. Keeps things tidier.
 - **Quality labels** — every record gets checked and labeled `HIGH` or `LOW` quality. `LOW` ones get moved into a separate `jobs_quarantine` table so they don't mess up the main data.
