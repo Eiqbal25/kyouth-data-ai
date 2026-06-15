@@ -5,6 +5,7 @@ from pathlib import Path
 
 SUCCESS_ICON = "\u2705"
 
+
 def load_sql(filename):
     """Load a .sql file from the project's queries/ folder."""
     path = Path(__file__).resolve().parent.parent / "queries" / filename
@@ -56,7 +57,9 @@ def run_data_profile(db_path):
             logging.warning(f"Marked LOW quality: {source_id} | {job_title}")
             low_count += 1
         else:
-            logging.info(f"{SUCCESS_ICON} Marked HIGH quality: {source_id} | {job_title}")
+            logging.info(
+                f"{SUCCESS_ICON} Marked HIGH quality: {source_id} | {job_title}"
+            )
             high_count += 1
 
     connection.commit()
@@ -99,6 +102,8 @@ def run_data_profile(db_path):
         print(f"🚨 Longest Description: {length} chars")
         print(f"   ↳ source_id: {source_id} | job_title: {job_title}")
 
-    print(f"\n📦 Quality Labeling -> HIGH: {high_count} | LOW: {low_count} (moved to jobs_quarantine)")
+    print(
+        f"\n📦 Quality Labeling -> HIGH: {high_count} | LOW: {low_count} (moved to jobs_quarantine)"
+    )
 
     connection.close()

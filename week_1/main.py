@@ -6,6 +6,7 @@ from src.processor import process_all_html
 from src.loader import load_all_jsons
 from src.profiler import run_data_profile
 
+
 class EmojiFormatter(logging.Formatter):
     EMOJIS = {
         "DEBUG": "",
@@ -23,11 +24,7 @@ class EmojiFormatter(logging.Formatter):
 handler = logging.StreamHandler()
 handler.setFormatter(EmojiFormatter("%(asctime)s %(levelname)s%(message)s"))
 
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=[handler],
-    force=True
-)
+logging.basicConfig(level=logging.INFO, handlers=[handler], force=True)
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -37,18 +34,23 @@ SILVER_DIR = BASE_DIR / "data" / "2_silver"
 GOLD_DIR = BASE_DIR / "data" / "3_gold"
 DB_NAME = "jobs.db"
 
+
 def run_profiler():
     db_path = GOLD_DIR / DB_NAME
     run_data_profile(db_path)
 
+
 def run_gold():
     load_all_jsons(SILVER_DIR, GOLD_DIR)
+
 
 def run_silver():
     process_all_html(BRONZE_DIR, SILVER_DIR)
 
+
 def run_bronze():
     ingest_all_mhtml(SOURCE_DIR, BRONZE_DIR)
+
 
 def run_all():
     run_bronze()
@@ -62,6 +64,7 @@ def run_all():
     print()
     run_profiler()
 
+
 commands = {
     "ingest": run_bronze,
     "process": run_silver,
@@ -70,11 +73,13 @@ commands = {
     "all": run_all,
 }
 
+
 def main():
     if len(sys.argv) != 2 or sys.argv[1] not in commands:
         print("Usage: python main.py [ingest|process|load|profile|all]")
         return
     commands[sys.argv[1]]()
+
 
 if __name__ == "__main__":
     main()

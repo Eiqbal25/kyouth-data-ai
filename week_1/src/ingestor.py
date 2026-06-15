@@ -43,7 +43,9 @@ def ingest_all_mhtml(input_dir, output_dir):
                     encoding = part.get("Content-Transfer-Encoding", "").lower()
 
                     if encoding == "quoted-printable":
-                        html_content = quopri.decodestring(payload.encode()).decode("utf-8", errors="replace")
+                        html_content = quopri.decodestring(payload.encode()).decode(
+                            "utf-8", errors="replace"
+                        )
                     else:
                         html_content = payload
                     break
@@ -64,5 +66,5 @@ def ingest_all_mhtml(input_dir, output_dir):
             logging.error(f"Failed to extract {mhtml_file.name} | Reason: {e}")
             failed += 1
 
-    print(f"\n📊 Bronze Summary:")
+    print("\n📊 Bronze Summary:")
     print(f"Total: {total} | Extracted: {extracted} | Failed: {failed}")

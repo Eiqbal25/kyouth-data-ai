@@ -7,6 +7,7 @@ from pathlib import Path
 SUCCESS_ICON = "\u2705"
 SKIP_ICON = "\u23ed\ufe0f"
 
+
 def load_sql(filename):
     """Load a .sql file from the project's queries/ folder."""
     path = Path(__file__).resolve().parent.parent / "queries" / filename
@@ -74,7 +75,13 @@ def load_all_jsons(input_dir, output_dir):
 
             cursor.execute(
                 insert_query,
-                (data["source_id"], data["job_title"], data["company"], data["description"], content_hash),
+                (
+                    data["source_id"],
+                    data["job_title"],
+                    data["company"],
+                    data["description"],
+                    content_hash,
+                ),
             )
 
             if cursor.rowcount == 1:
@@ -91,20 +98,28 @@ def load_all_jsons(input_dir, output_dir):
             if existing_hash != content_hash:
                 cursor.execute(
                     update_query,
-                    (data["job_title"], data["company"], data["description"], content_hash, data["source_id"]),
+                    (
+                        data["job_title"],
+                        data["company"],
+                        data["description"],
+                        content_hash,
+                        data["source_id"],
+                    ),
                 )
                 connection.commit()
-                logging.info(f"{SUCCESS_ICON} Updated (content changed): {json_file.name}")
+                logging.info(
+                    f"{SUCCESS_ICON} Updated (content changed): {json_file.name}"
+                )
                 inserted += 1  # counted as a successful write
             else:
                 logging.info(f"{SKIP_ICON} Skipped (duplicate): {json_file.name}")
                 skipped += 1
 
         except Exception as e:
-            logging.warning(f"Failed to load {json_file.name} | Reason: {e}")                                                       
+            logging.warning(f"Failed to load {json_file.name} | Reason: {e}")
             skipped += 1
 
     connection.close()
 
-    print(f"\n📊 Gold Summary:")
+    print("\n📊 Gold Summary:")
     print(f"Total: {total} | Inserted: {inserted} | Skipped: {skipped}")
