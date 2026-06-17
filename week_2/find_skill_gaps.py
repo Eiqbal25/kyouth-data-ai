@@ -2,7 +2,9 @@ import os
 import sqlite3
 import sys
 import time
+from collections import Counter
 from typing import List
+
 
 from dotenv import load_dotenv
 from google import genai
@@ -19,6 +21,7 @@ class SkillGapResult(BaseModel):
     gaps: List[str]
     tokens: int = 0
     time: float = 0.0
+    top_missing_skills: List[str] = []
 
 
 def split_skills(skill_str: str) -> List[str]:
@@ -68,17 +71,21 @@ def extract_resume_skills(
     return raw_skills, tokens
 
 
-def fetch_db_skills(conn: sqlite3.Connection) -> List[str]:
+def fetch_db_skills(conn: sqlite3.Connection) -> tuple[List[str], Counter]:
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT tech_stack FROM jobs WHERE tech_stack IS NOT NULL AND tech_stack != ''"
+        "SELECT tech_stack FROM jobs WHERE tech_stack IS NOT NULL AND tech_stack != '' AND tech_stack != 'no tech stack extracted'"
     )
     rows = cursor.fetchall()
 
     all_skills = []
+    skill_demand: Counter = Counter()
     for (tech_stack,) in rows:
-        all_skills.extend(split_skills(tech_stack))
-    return all_skills
+        job_skills = split_skills(tech_stack)
+        all_skills.extend(job_skills)
+        for skill in set(job_skills):
+            skill_demand[skill] += 1
+    return all_skills, skill_demand
 
 
 def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
@@ -127,7 +134,7 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
         return SkillGapResult(gaps=[])
 
     try:
-        db_skills = fetch_db_skills(conn)
+        db_skills, skill_demand = fetch_db_skills(conn)
     except Exception as e:
         print(f"[DB Error] Could not fetch skills: {e}")
         conn.close()
@@ -139,9 +146,13 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
     db_set = set(db_skills)
     gaps = sorted(db_set - resume_set)
 
+    # Top missing skills by job demand count
+    gap_demand = {skill: skill_demand[skill] for skill in gaps}
+    top_missing = [s for s, _ in sorted(gap_demand.items(), key=lambda x: x[1], reverse=True)[:5]]
+
     elapsed = (time.time() - start_time) * 1000
 
-    return SkillGapResult(gaps=gaps, tokens=total_tokens, time=round(elapsed))
+    return SkillGapResult(gaps=gaps, tokens=total_tokens, time=round(elapsed), top_missing_skills=top_missing)
 
 
 def main():

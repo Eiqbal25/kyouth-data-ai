@@ -2,6 +2,7 @@ import os
 import sqlite3
 import sys
 import time
+from collections import Counter
 
 from dotenv import load_dotenv
 from google import genai
@@ -25,6 +26,20 @@ def fetch_untagged_jobs(conn: sqlite3.Connection) -> list[tuple]:
         "SELECT source_id, description FROM jobs WHERE tech_stack IS NULL OR tech_stack = ''"
     )
     return cursor.fetchall()
+
+
+def fetch_all_tagged_jobs(conn: sqlite3.Connection) -> list[tuple]:
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT source_id, tech_stack FROM jobs WHERE tech_stack IS NOT NULL AND tech_stack != ''"
+    )
+    return cursor.fetchall()
+
+
+def fetch_total_jobs(conn: sqlite3.Connection) -> int:
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM jobs")
+    return cursor.fetchone()[0]
 
 
 def build_prompt(batch: list[tuple]) -> str:
@@ -62,14 +77,43 @@ def update_jobs(conn: sqlite3.Connection, results: dict[str, str]):
     cursor = conn.cursor()
     for source_id, tech_stack in results.items():
         if not tech_stack.strip():
-            print(f"[Warning] Empty tech stack for Job {source_id}, skipping")
-            continue
+            print(f"[Warning] No tech stack extracted for Job {source_id}, setting placeholder")
+            tech_stack = "no tech stack extracted"
         cursor.execute(
             "UPDATE jobs SET tech_stack = ? WHERE source_id = ?",
             (tech_stack, source_id),
         )
         print(f"Analyzed Job {source_id}: {tech_stack}")
     conn.commit()
+
+
+def measure_quality(conn: sqlite3.Connection, total_jobs: int):
+    tagged = fetch_all_tagged_jobs(conn)
+    tagged_count = len(tagged)
+
+    # Direct match %: percentage of jobs that have a non-empty tech stack
+    match_pct = (tagged_count / total_jobs * 100) if total_jobs > 0 else 0.0
+
+    # Duplicate count: skills that appear in more than one job
+    all_skills = []
+    for _, tech_stack in tagged:
+        skills = [s.strip().lower() for s in tech_stack.split(",") if s.strip()]
+        all_skills.extend(skills)
+
+    skill_counts = Counter(all_skills)
+    duplicates = {skill: count for skill, count in skill_counts.items() if count > 1}
+
+    print(f"\n--- Tagging Quality Report ---")
+    print(f"Total jobs: {total_jobs}")
+    print(f"Tagged jobs: {tagged_count}")
+    print(f"Direct match %: {match_pct:.1f}%")
+    print(f"Duplicate skills (appear in >1 job): {len(duplicates)}")
+    if duplicates:
+        top = sorted(duplicates.items(), key=lambda x: x[1], reverse=True)[:5]
+        print(f"Top 5 most repeated skills:")
+        for skill, count in top:
+            print(f"  {skill}: {count} jobs")
+    print(f"------------------------------\n")
 
 
 def tag_data(db_url: str) -> tuple[int, float]:
@@ -83,6 +127,7 @@ def tag_data(db_url: str) -> tuple[int, float]:
         return 0, 0.0
 
     try:
+        total_jobs = fetch_total_jobs(conn)
         rows = fetch_untagged_jobs(conn)
     except Exception as e:
         print(f"[DB Error] Could not fetch jobs: {e}")
@@ -91,6 +136,7 @@ def tag_data(db_url: str) -> tuple[int, float]:
 
     if not rows:
         print("No data to tag")
+        measure_quality(conn, total_jobs)
         elapsed = (time.time() - start_time) * 1000
         print(f"Total tokens used: 0, took {elapsed:.3f}ms")
         conn.close()
@@ -155,6 +201,7 @@ def tag_data(db_url: str) -> tuple[int, float]:
                 f"[Batch {batch_index}] All {MAX_RETRIES} attempts failed, skipping batch"
             )
 
+    measure_quality(conn, total_jobs)
     conn.close()
     elapsed = (time.time() - start_time) * 1000
     print(f"Total tokens used: {total_tokens}, took {elapsed:.3f}ms")
