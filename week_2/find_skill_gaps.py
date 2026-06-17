@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import sys
 import time
@@ -10,7 +11,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-2.5-flash-lite"
 EXCEPTIONS = {"a/b testing", "ci/cd"}
 
 
@@ -97,8 +98,14 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
         print(f"[DB Error] Could not connect to database: {e}")
         return SkillGapResult(gaps=[])
 
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        print("[Config Error] GOOGLE_API_KEY not found in environment")
+        conn.close()
+        return SkillGapResult(gaps=[])
+
     try:
-        client = genai.Client()
+        client = genai.Client(api_key=api_key)
     except Exception as e:
         print(f"[API Error] Could not initialize Gemini client: {e}")
         conn.close()

@@ -1,14 +1,16 @@
+import os
 import sqlite3
 import sys
 import time
+
 from dotenv import load_dotenv
 from google import genai
 
 load_dotenv()
 
 # Rate limit justification:
-# gemini-2.5-flash: 5 RPM, 20 RPD
-# Batch size = 5 (one API call per batch, fits within 5 RPM)
+# gemini-2.5-flash-lite: 10 RPM, 20 RPD
+# Batch size = 5 (one API call per batch, fits within 10 RPM)
 # Retry wait = 60s (one minute, resets the RPM window)
 # Max retries = 3 (avoid infinite loops on persistent errors)
 MODEL = "gemini-2.5-flash-lite"
@@ -94,8 +96,14 @@ def tag_data(db_url: str) -> tuple[int, float]:
         conn.close()
         return 0, elapsed
 
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        print("[Config Error] GOOGLE_API_KEY not found in environment")
+        conn.close()
+        return 0, 0.0
+
     try:
-        client = genai.Client()
+        client = genai.Client(api_key=api_key)
     except Exception as e:
         print(f"[API Error] Could not initialize Gemini client: {e}")
         conn.close()
@@ -115,7 +123,6 @@ def tag_data(db_url: str) -> tuple[int, float]:
                 )
                 response_text = response.text
 
-                # count tokens
                 if response.usage_metadata:
                     total_tokens += response.usage_metadata.prompt_token_count or 0
                     total_tokens += response.usage_metadata.candidates_token_count or 0
