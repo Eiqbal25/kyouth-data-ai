@@ -31,7 +31,9 @@ def prompt_model(model: str, prompt: str) -> str:
             return response["message"]["content"]
 
     except Exception as e:
-        return f"[Error] {type(e).__name__}: {e}"
+        if model in GOOGLE_MODELS:
+            return f"[Gemini Error] {e}"
+        return f"[Ollama Error] {e}"
 
 
 def main():
