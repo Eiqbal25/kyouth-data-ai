@@ -4,3 +4,7 @@ __pycache__/
 data/jobs_d1.db
 data/resume_d3.txt
 data/*.db
+data/resume_d3_eval.txt
+data/resume_d3_eval.pdf
+data/d3_truth.json
+data/d3_wrong.json
