@@ -20,9 +20,9 @@ EXCEPTIONS = {"a/b testing", "ci/cd"}
 
 class SkillGapResult(BaseModel):
     gaps: List[str]
+    top_missing_skills: List[str] = []
     tokens: int = 0
     time: float = 0.0
-    top_missing_skills: List[str] = []
 
 
 def split_skills(skill_str: str) -> List[str]:
