@@ -194,8 +194,8 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
 
 
 def main():
-    input_file = sys.argv[1] if len(sys.argv) > 1 else "data/resume_d3.txt"
-    db_url = sys.argv[2] if len(sys.argv) > 2 else "data/jobs_d1.db"
+    input_file = sys.argv[1] if len(sys.argv) > 1 else "data/resume_d3_eval.txt"
+    db_url = sys.argv[2] if len(sys.argv) > 2 else "data/jobs_d3_eval.db"
 
     result = find_skill_gaps(input_file, db_url)
     print(result)

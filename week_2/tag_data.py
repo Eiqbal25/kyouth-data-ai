@@ -197,7 +197,7 @@ def tag_data(db_url: str) -> tuple[int, float]:
 
 
 def main():
-    db_url = sys.argv[1] if len(sys.argv) > 1 else "data/jobs_d1.db"
+    db_url = sys.argv[1] if len(sys.argv) > 1 else "data/jobs_d3_eval.db"
     tag_data(db_url)
 
 
