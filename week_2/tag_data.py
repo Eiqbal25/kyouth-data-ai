@@ -79,7 +79,7 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
             print(f"Total tokens used: 0, took {elapsed:.3f}ms")
             return 0, elapsed
 
-        batches = [rows[i: i + BATCH_SIZE] for i in range(0, len(rows), BATCH_SIZE)]
+        batches = [rows[i : i + BATCH_SIZE] for i in range(0, len(rows), BATCH_SIZE)]
 
         for batch_index, batch in enumerate(batches):
             prompt = build_prompt(batch)
@@ -95,7 +95,9 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
 
                     if response.usage_metadata:
                         total_tokens += response.usage_metadata.prompt_token_count or 0
-                        total_tokens += response.usage_metadata.candidates_token_count or 0
+                        total_tokens += (
+                            response.usage_metadata.candidates_token_count or 0
+                        )
                     else:
                         word_count = len(prompt.split()) + len(response_text.split())
                         total_tokens += word_count * 4
@@ -114,13 +116,18 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
                     # Write results via MCP
                     for source_id, tech_stack in results.items():
                         if not tech_stack.strip():
-                            print(f"[Warning] No tech stack extracted for Job {source_id}, setting placeholder")
+                            print(
+                                f"[Warning] No tech stack extracted for Job {source_id}, setting placeholder"
+                            )
                             tech_stack = "no tech stack extracted"
                         try:
-                            await mcp.call_tool("update_tech_stack", {
-                                "source_id": source_id,
-                                "tech_stack": tech_stack,
-                            })
+                            await mcp.call_tool(
+                                "update_tech_stack",
+                                {
+                                    "source_id": source_id,
+                                    "tech_stack": tech_stack,
+                                },
+                            )
                             print(f"Analyzed Job {source_id}: {tech_stack}")
                         except Exception as e:
                             print(f"[MCP Error] Could not update job {source_id}: {e}")
@@ -134,7 +141,9 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
                         await asyncio.sleep(RETRY_WAIT)
 
             if not success:
-                print(f"[Batch {batch_index}] All {MAX_RETRIES} attempts failed, skipping batch")
+                print(
+                    f"[Batch {batch_index}] All {MAX_RETRIES} attempts failed, skipping batch"
+                )
 
         # Quality report via MCP
         try:
@@ -160,14 +169,14 @@ def print_quality_report(total_jobs: int, tagged_rows: list):
 
     all_skills = []
     for row in tagged_rows:
-        source_id, tech_stack = row[0], row[1]
+        tech_stack = row[1]
         skills = [s.strip().lower() for s in tech_stack.split(",") if s.strip()]
         all_skills.extend(skills)
 
     skill_counts = Counter(all_skills)
     duplicates = {skill: count for skill, count in skill_counts.items() if count > 1}
 
-    print(f"\n--- Tagging Quality Report ---")
+    print("\n--- Tagging Quality Report ---")
     print(f"Total jobs: {total_jobs}")
     print(f"Tagged jobs: {tagged_count}")
     print(f"Successfully extracted: {successfully_tagged}")
@@ -175,10 +184,10 @@ def print_quality_report(total_jobs: int, tagged_rows: list):
     print(f"Duplicate skills (appear in >1 job): {len(duplicates)}")
     if duplicates:
         top = sorted(duplicates.items(), key=lambda x: x[1], reverse=True)[:5]
-        print(f"Top 5 most repeated skills:")
+        print("Top 5 most repeated skills:")
         for skill, count in top:
             print(f"  {skill}: {count} jobs")
-    print(f"------------------------------\n")
+    print("------------------------------\n")
 
 
 def tag_data(db_url: str) -> tuple[int, float]:

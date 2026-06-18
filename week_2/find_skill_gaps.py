@@ -57,7 +57,9 @@ def sanitize_resume(resume_text: str) -> str:
     for pattern in injection_patterns:
         if pattern in lowered:
             idx = lowered.find(pattern)
-            resume_text = resume_text[:idx] + "[REDACTED]" + resume_text[idx + len(pattern):]
+            resume_text = (
+                resume_text[:idx] + "[REDACTED]" + resume_text[idx + len(pattern) :]
+            )
             lowered = resume_text.lower()
     return resume_text
 
@@ -122,9 +124,7 @@ async def extract_resume_skills_async(
     resume_text: str, client: genai.Client
 ) -> tuple[List[str], int]:
     loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(
-        None, extract_resume_skills, resume_text, client
-    )
+    return await loop.run_in_executor(None, extract_resume_skills, resume_text, client)
 
 
 async def run_find_skill_gaps(
@@ -186,11 +186,18 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
     gaps = sorted(db_set - resume_set)
 
     gap_demand = {skill: skill_demand[skill] for skill in gaps}
-    top_missing = [s for s, _ in sorted(gap_demand.items(), key=lambda x: x[1], reverse=True)[:5]]
+    top_missing = [
+        s for s, _ in sorted(gap_demand.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
 
     elapsed = (time.time() - start_time) * 1000
 
-    return SkillGapResult(gaps=gaps, top_missing_skills=top_missing, tokens=total_tokens, time=round(elapsed))
+    return SkillGapResult(
+        gaps=gaps,
+        top_missing_skills=top_missing,
+        tokens=total_tokens,
+        time=round(elapsed),
+    )
 
 
 def main():
