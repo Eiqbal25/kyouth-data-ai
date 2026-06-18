@@ -75,19 +75,6 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
 
         if not rows:
             print("No data to tag")
-
-            # Quality report via MCP
-            try:
-                count_result = await mcp.call_tool("get_job_count", {})
-                count_text = count_result.content[0].text
-                counts = json.loads(count_text)
-                stacks_result = await mcp.call_tool("get_all_tech_stacks", {})
-                stacks_text = stacks_result.content[0].text
-                tagged_rows = json.loads(stacks_text)
-                print_quality_report(counts["total"], tagged_rows)
-            except Exception as e:
-                print(f"[MCP Error] Could not get quality report: {e}")
-
             elapsed = (time.time() - start_time) * 1000
             print(f"Total tokens used: 0, took {elapsed:.3f}ms")
             return 0, elapsed
