@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-2.5-flash-lite"
 EXCEPTIONS = {"a/b testing", "ci/cd"}
 
 

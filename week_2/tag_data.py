@@ -16,7 +16,7 @@ load_dotenv()
 # Batch size = 5 (one API call per batch, fits within 10 RPM)
 # Retry wait = 60s (one minute, resets the RPM window)
 # Max retries = 3 (avoid infinite loops on persistent errors)
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-2.5-flash-lite"
 BATCH_SIZE = 5
 RETRY_WAIT = 60
 MAX_RETRIES = 3
