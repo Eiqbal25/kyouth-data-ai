@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-MODEL = "gemini-2.5-flash-lite"
+MODEL = "gemini-2.5-flash"
 EXCEPTIONS = {"a/b testing", "ci/cd"}
 
 
@@ -102,11 +102,18 @@ def extract_resume_skills(
 
 
 async def fetch_db_skills_mcp(db_url: str) -> tuple[List[str], Counter]:
-    os.environ["DB_PATH"] = db_url
     all_skills = []
     skill_demand: Counter = Counter()
 
-    async with Client("db_server.py") as mcp:
+    import subprocess
+    from fastmcp.client.transports import PythonStdioTransport
+
+    env = os.environ.copy()
+    env["DB_PATH"] = db_url
+
+    transport = PythonStdioTransport("db_server.py", env=env)
+
+    async with Client(transport) as mcp:
         result = await mcp.call_tool("get_all_tech_stacks", {})
         if not result.content:
             return all_skills, skill_demand

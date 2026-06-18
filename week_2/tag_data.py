@@ -16,7 +16,7 @@ load_dotenv()
 # Batch size = 5 (one API call per batch, fits within 10 RPM)
 # Retry wait = 60s (one minute, resets the RPM window)
 # Max retries = 3 (avoid infinite loops on persistent errors)
-MODEL = "gemini-2.5-flash-lite"
+MODEL = "gemini-2.5-flash"
 BATCH_SIZE = 5
 RETRY_WAIT = 60
 MAX_RETRIES = 3
@@ -57,10 +57,13 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
     start_time = time.time()
     total_tokens = 0
 
-    os.environ["DB_PATH"] = db_url
-    db_server = "db_server.py"
+    from fastmcp.client.transports import PythonStdioTransport
 
-    async with Client(db_server) as mcp:
+    env = os.environ.copy()
+    env["DB_PATH"] = db_url
+    transport = PythonStdioTransport("db_server.py", env=env)
+
+    async with Client(transport) as mcp:
         # Fetch untagged jobs via MCP
         try:
             rows_result = await mcp.call_tool("read_jobs", {"include_tagged": False})
@@ -164,8 +167,9 @@ async def run_tag_data(db_url: str, client: genai.Client) -> tuple[int, float]:
 
 
 def print_quality_report(total_jobs: int, tagged_rows: list):
-    tagged_count = len(tagged_rows)
-    match_pct = (tagged_count / total_jobs * 100) if total_jobs > 0 else 0.0
+    tagged_count = total_jobs  # includes placeholder jobs
+    successfully_tagged = len(tagged_rows)  # jobs with actual tech stacks
+    match_pct = (successfully_tagged / total_jobs * 100) if total_jobs > 0 else 0.0
 
     all_skills = []
     for row in tagged_rows:
@@ -179,6 +183,7 @@ def print_quality_report(total_jobs: int, tagged_rows: list):
     print(f"\n--- Tagging Quality Report ---")
     print(f"Total jobs: {total_jobs}")
     print(f"Tagged jobs: {tagged_count}")
+    print(f"Successfully extracted: {successfully_tagged}")
     print(f"Direct match %: {match_pct:.1f}%")
     print(f"Duplicate skills (appear in >1 job): {len(duplicates)}")
     if duplicates:
