@@ -8,6 +8,7 @@ from typing import List
 
 from dotenv import load_dotenv
 from fastmcp import Client
+from fastmcp.client.transports import PythonStdioTransport
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
@@ -98,12 +99,8 @@ async def fetch_db_skills_mcp(db_url: str) -> tuple[List[str], Counter]:
     all_skills = []
     skill_demand: Counter = Counter()
 
-    import subprocess
-    from fastmcp.client.transports import PythonStdioTransport
-
     env = os.environ.copy()
     env["DB_PATH"] = db_url
-
     transport = PythonStdioTransport("db_server.py", env=env)
 
     async with Client(transport) as mcp:
@@ -119,6 +116,27 @@ async def fetch_db_skills_mcp(db_url: str) -> tuple[List[str], Counter]:
                 skill_demand[skill] += 1
 
     return all_skills, skill_demand
+
+
+async def extract_resume_skills_async(
+    resume_text: str, client: genai.Client
+) -> tuple[List[str], int]:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        None, extract_resume_skills, resume_text, client
+    )
+
+
+async def run_find_skill_gaps(
+    resume_text: str, db_url: str, client: genai.Client
+) -> tuple[List[str], int, Counter]:
+    # Sequential execution (baseline)
+    # Parallel execution - runs Gemini and MCP fetch simultaneously
+    (resume_skills, tokens), (db_skills, skill_demand) = await asyncio.gather(
+        extract_resume_skills_async(resume_text, client),
+        fetch_db_skills_mcp(db_url),
+    )
+    return resume_skills, tokens, db_skills, skill_demand
 
 
 def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
@@ -144,9 +162,14 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
         return SkillGapResult(gaps=[])
 
     resume_skills = []
+    db_skills = []
+    skill_demand: Counter = Counter()
+
     for attempt in range(1, 4):
         try:
-            resume_skills, tokens = extract_resume_skills(resume_text, client)
+            resume_skills, tokens, db_skills, skill_demand = asyncio.run(
+                run_find_skill_gaps(resume_text, db_url, client)
+            )
             total_tokens += tokens
             break
         except Exception as e:
@@ -158,12 +181,6 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
         print("[API Error] All attempts to extract resume skills failed")
         return SkillGapResult(gaps=[])
 
-    try:
-        db_skills, skill_demand = asyncio.run(fetch_db_skills_mcp(db_url))
-    except Exception as e:
-        print(f"[MCP Error] Could not fetch skills: {e}")
-        return SkillGapResult(gaps=[])
-
     resume_set = set(resume_skills)
     db_set = set(db_skills)
     gaps = sorted(db_set - resume_set)
@@ -173,7 +190,7 @@ def find_skill_gaps(input_file_path: str, db_url: str) -> SkillGapResult:
 
     elapsed = (time.time() - start_time) * 1000
 
-    return SkillGapResult(gaps=gaps, tokens=total_tokens, time=round(elapsed), top_missing_skills=top_missing)
+    return SkillGapResult(gaps=gaps, top_missing_skills=top_missing, tokens=total_tokens, time=round(elapsed))
 
 
 def main():
