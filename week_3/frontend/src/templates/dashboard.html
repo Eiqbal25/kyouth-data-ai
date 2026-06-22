@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <style>
+      body { background-color: #f8f9fa; }
+      .chart-card { border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">📊 Job Dashboard</h2>
+        <a href="/" class="btn btn-outline-secondary">← Back to Chat</a>
+      </div>
+
+      <!-- Search bar -->
+      <div class="mb-4">
+        <input
+          type="text"
+          id="search-input"
+          class="form-control"
+          placeholder="Search jobs by title or company..."
+          oninput="searchJobs(this.value)"
+        />
+      </div>
+
+      <!-- Search results -->
+      <div id="search-results" class="mb-4"></div>
+
+      <!-- Charts -->
+      <div class="row g-4">
+        <div class="col-md-5">
+          <div class="card chart-card shadow-sm p-3">
+            <h5 class="fw-semibold mb-3">Quality Distribution</h5>
+            <canvas id="qualityChart"></canvas>
+          </div>
+        </div>
+        <div class="col-md-7">
+          <div class="card chart-card shadow-sm p-3">
+            <h5 class="fw-semibold mb-3">Top 10 Companies by Job Count</h5>
+            <canvas id="companyChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Quality pie chart
+      fetch("/api/quality-distribution")
+        .then(r => r.json())
+        .then(data => {
+          new Chart(document.getElementById("qualityChart"), {
+            type: "pie",
+            data: {
+              labels: Object.keys(data),
+              datasets: [{
+                data: Object.values(data),
+                backgroundColor: ["#6c63ff", "#ff6584"],
+              }]
+            },
+            options: { plugins: { legend: { position: "bottom" } } }
+          });
+        });
+
+      // Top companies bar chart
+      fetch("/api/top-companies")
+        .then(r => r.json())
+        .then(data => {
+          new Chart(document.getElementById("companyChart"), {
+            type: "bar",
+            data: {
+              labels: data.map(d => d.company),
+              datasets: [{
+                label: "Job Count",
+                data: data.map(d => d.count),
+                backgroundColor: "#6c63ff",
+                borderRadius: 6,
+              }]
+            },
+            options: {
+              indexAxis: "y",
+              plugins: { legend: { display: false } },
+              scales: { x: { beginAtZero: true } }
+            }
+          });
+        });
+
+      // Search jobs
+      let searchTimeout;
+      function searchJobs(q) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          if (q.length < 2) {
+            document.getElementById("search-results").innerHTML = "";
+            return;
+          }
+          fetch(`/api/search?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+              const container = document.getElementById("search-results");
+              if (data.length === 0) {
+                container.innerHTML = "<p class='text-muted'>No results found.</p>";
+                return;
+              }
+              container.innerHTML = `
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover bg-white">
+                    <thead class="table-light">
+                      <tr><th>Job Title</th><th>Company</th><th>Quality</th></tr>
+                    </thead>
+                    <tbody>
+                      ${data.map(r => `
+                        <tr>
+                          <td>${r.job_title}</td>
+                          <td>${r.company}</td>
+                          <td><span class="badge ${r.quality === 'HIGH' ? 'bg-success' : 'bg-warning text-dark'}">${r.quality}</span></td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </div>`;
+            });
+        }, 300);
+      }
+    </script>
+  </body>
+</html>
