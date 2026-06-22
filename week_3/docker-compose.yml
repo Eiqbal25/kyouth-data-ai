@@ -23,11 +23,17 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_API_KEY=/run/secrets/google_api_key
+    secrets:
+      - google_api_key
     volumes:
       - ../week_1/data/3_gold/jobs.db:/data/jobs.db:ro
     networks:
       - app-network
+
+secrets:
+  google_api_key:
+    file: ./secrets/google_api_key.txt
 
 networks:
   app-network:

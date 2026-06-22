@@ -11,6 +11,11 @@ from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
+# Docker secrets override
+secret_path = Path("/run/secrets/google_api_key")
+if secret_path.exists():
+    os.environ["GOOGLE_API_KEY"] = secret_path.read_text().strip()
+
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
