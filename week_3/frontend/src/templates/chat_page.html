@@ -1,10 +1,148 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>Skill Gap Detector</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Resume Helper Chatbot</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+      #chat-history {
+        height: 60vh;
+        overflow-y: auto;
+        background-color: #f0f0f0;
+        border-radius: 12px;
+        padding: 1rem;
+      }
+      .bubble-user {
+        background-color: #6c63ff;
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+        padding: 10px 14px;
+        max-width: 70%;
+        word-wrap: break-word;
+      }
+      .bubble-bot {
+        background-color: white;
+        color: #333;
+        border-radius: 18px 18px 18px 4px;
+        padding: 10px 14px;
+        max-width: 70%;
+        word-wrap: break-word;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+    </style>
   </head>
   <body>
-    <p>hello world!</p>
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+
+          <!-- Chat history -->
+          <div id="chat-history" class="mb-3">
+            <div class="d-flex justify-content-start mb-2">
+              <div class="bubble-bot">Hi! How can I help you today?</div>
+            </div>
+          </div>
+
+          <!-- Input area -->
+          <div class="card shadow-sm">
+            <div class="card-body d-flex align-items-center gap-2">
+              <label for="pdf-upload" style="cursor:pointer;" title="Upload PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#6c63ff" viewBox="0 0 16 16">
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                  <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                </svg>
+              </label>
+              <input type="file" id="pdf-upload" accept=".pdf" class="d-none" />
+              <input
+                type="text"
+                id="user-input"
+                class="form-control border-0"
+                placeholder="Type a message..."
+              />
+              <button class="btn text-white px-4" style="background-color:#6c63ff;" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
+          <div id="pdf-filename" class="text-muted small mt-1 ms-1"></div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      const BACKEND_URL = "{{ backend_url }}";
+      let pdfText = "";
+
+      // Show filename when PDF selected
+      document.getElementById("pdf-upload").addEventListener("change", async function () {
+        const file = this.files[0];
+        if (!file) return;
+        document.getElementById("pdf-filename").textContent = "📎 " + file.name;
+
+        // Extract text from PDF using pdf.js
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let text = "";
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(" ") + "\n";
+        }
+        pdfText = text;
+      });
+
+      // Send message on Enter key
+      document.getElementById("user-input").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") sendMessage();
+      });
+
+      function appendMessage(text, sender) {
+        const history = document.getElementById("chat-history");
+        const wrapper = document.createElement("div");
+        wrapper.className = "d-flex mb-2 " + (sender === "user" ? "justify-content-end" : "justify-content-start");
+        const bubble = document.createElement("div");
+        bubble.className = sender === "user" ? "bubble-user" : "bubble-bot";
+        bubble.textContent = text;
+        wrapper.appendChild(bubble);
+        history.appendChild(wrapper);
+        history.scrollTop = history.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById("user-input");
+        const message = input.value.trim();
+        if (!message) return;
+
+        appendMessage(message, "user");
+        input.value = "";
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: message, pdf_text: pdfText }),
+          });
+          const data = await response.json();
+          appendMessage(data.reply, "bot");
+        } catch (err) {
+          appendMessage("Error: could not reach backend.", "bot");
+        }
+
+        // Clear PDF after sending
+        pdfText = "";
+        document.getElementById("pdf-filename").textContent = "";
+        document.getElementById("pdf-upload").value = "";
+      }
+    </script>
   </body>
 </html>
