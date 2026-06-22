@@ -1,0 +1,34 @@
+services:
+  frontend:
+    image: frontend
+    pull_policy: build
+    build:
+      context: frontend
+    ports:
+      - "8000:8000"
+    environment:
+      - BACKEND_URL=http://backend:8001
+    volumes:
+      - ../week_1/data/3_gold/jobs.db:/data/jobs.db:ro
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  backend:
+    image: backend
+    pull_policy: build
+    build:
+      context: backend
+    ports:
+      - "8001:8001"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ../week_1/data/3_gold/jobs.db:/data/jobs.db:ro
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

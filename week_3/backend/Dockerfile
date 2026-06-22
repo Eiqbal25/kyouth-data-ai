@@ -11,4 +11,4 @@ RUN uv sync --frozen
 COPY src/ ./src/
 
 ENTRYPOINT ["uv", "run", "uvicorn"]
-CMD ["--app-dir", "src", "--host", "0.0.0.0", "app:app"]
+CMD ["--app-dir", "src", "--host", "0.0.0.0", "--port", "8001", "app:app"]

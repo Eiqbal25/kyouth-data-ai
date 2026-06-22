@@ -11,7 +11,7 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent / "templates")
 
-DB_PATH = Path(__file__).resolve().parent.parent.parent.parent / "week_1" / "data" / "3_gold" / "jobs.db"
+DB_PATH = Path("/data/jobs.db") if Path("/data/jobs.db").exists() else Path(__file__).resolve().parent.parent.parent.parent / "week_1" / "data" / "3_gold" / "jobs.db"
 
 
 def get_db():
