@@ -30,13 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = str(
+DB_PATH = os.getenv("DB_PATH", str(
     Path(__file__).resolve().parent.parent.parent.parent
-    / "week_1"
-    / "data"
-    / "3_gold"
-    / "jobs.db"
-)
+    / "week_1" / "data" / "3_gold" / "jobs.db"
+))
 
 
 class ChatRequest(BaseModel):
@@ -64,9 +61,7 @@ async def chat(request: ChatRequest):
             result = await asyncio.get_event_loop().run_in_executor(
                 pool, find_skill_gaps, tmp_path, DB_PATH
             )
-            print("RESULT:", result)
-            print("GAPS:", result.gaps)
-            print("TOP:", result.top_missing_skills)
+
     finally:
         Path(tmp_path).unlink(missing_ok=True)
 
