@@ -4,3 +4,8 @@ __pycache__
 .env
 uv.lock
 week_3/secrets/
+main.py
+*.db
+*.png
+week_2/test_mcp.py
+week_2/data/malicious_resume.txt
