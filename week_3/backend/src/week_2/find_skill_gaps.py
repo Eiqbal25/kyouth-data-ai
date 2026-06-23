@@ -104,7 +104,9 @@ async def fetch_db_skills_mcp(db_url: str) -> tuple[List[str], Counter]:
 
     env = os.environ.copy()
     env["DB_PATH"] = db_url
-    transport = PythonStdioTransport(str(Path(__file__).resolve().parent / "db_server.py"), env=env)
+    transport = PythonStdioTransport(
+        str(Path(__file__).resolve().parent / "db_server.py"), env=env
+    )
 
     async with Client(transport) as mcp:
         result = await mcp.call_tool("get_all_tech_stacks", {})

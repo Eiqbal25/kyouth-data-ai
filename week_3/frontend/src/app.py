@@ -11,7 +11,15 @@ app = FastAPI()
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent / "templates")
 
-DB_PATH = Path("/data/jobs.db") if Path("/data/jobs.db").exists() else Path(__file__).resolve().parent.parent.parent.parent / "week_1" / "data" / "3_gold" / "jobs.db"
+DB_PATH = (
+    Path("/data/jobs.db")
+    if Path("/data/jobs.db").exists()
+    else Path(__file__).resolve().parent.parent.parent.parent
+    / "week_1"
+    / "data"
+    / "3_gold"
+    / "jobs.db"
+)
 
 
 def get_db():
@@ -23,7 +31,9 @@ def get_db():
 @app.get("/")
 async def index(request: Request):
     backend_url = os.getenv("BACKEND_URL", "http://localhost:8001")
-    return templates.TemplateResponse(request, "chat_page.html", {"backend_url": backend_url})
+    return templates.TemplateResponse(
+        request, "chat_page.html", {"backend_url": backend_url}
+    )
 
 
 @app.get("/dashboard")
@@ -45,7 +55,9 @@ async def quality_distribution():
 async def top_companies():
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT company, COUNT(*) as count FROM jobs GROUP BY company ORDER BY count DESC LIMIT 10")
+    cur.execute(
+        "SELECT company, COUNT(*) as count FROM jobs GROUP BY company ORDER BY count DESC LIMIT 10"
+    )
     rows = cur.fetchall()
     conn.close()
     return [{"company": row["company"], "count": row["count"]} for row in rows]
@@ -61,4 +73,12 @@ async def search(q: str = ""):
     )
     rows = cur.fetchall()
     conn.close()
-    return [{"source_id": row["source_id"], "job_title": row["job_title"], "company": row["company"], "quality": row["quality"]} for row in rows]
+    return [
+        {
+            "source_id": row["source_id"],
+            "job_title": row["job_title"],
+            "company": row["company"],
+            "quality": row["quality"],
+        }
+        for row in rows
+    ]

@@ -1,6 +1,7 @@
-import os
-import tempfile
 import asyncio
+import os
+import sys
+import tempfile
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,10 +17,9 @@ secret_path = Path("/run/secrets/google_api_key")
 if secret_path.exists():
     os.environ["GOOGLE_API_KEY"] = secret_path.read_text().strip()
 
-import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from week_2.find_skill_gaps import find_skill_gaps
+from week_2.find_skill_gaps import find_skill_gaps  # noqa: E402
 
 app = FastAPI()
 
@@ -30,10 +30,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = os.getenv("DB_PATH", str(
-    Path(__file__).resolve().parent.parent.parent.parent
-    / "week_1" / "data" / "3_gold" / "jobs.db"
-))
+DB_PATH = os.getenv(
+    "DB_PATH",
+    str(
+        Path(__file__).resolve().parent.parent.parent.parent
+        / "week_1"
+        / "data"
+        / "3_gold"
+        / "jobs.db"
+    ),
+)
 
 
 class ChatRequest(BaseModel):
@@ -57,6 +63,7 @@ async def chat(request: ChatRequest):
 
     try:
         import concurrent.futures
+
         with concurrent.futures.ThreadPoolExecutor() as pool:
             result = await asyncio.get_event_loop().run_in_executor(
                 pool, find_skill_gaps, tmp_path, DB_PATH
@@ -68,7 +75,9 @@ async def chat(request: ChatRequest):
     if not result.gaps:
         reply = "I couldn't detect any skill gaps. Please make sure your resume text is included."
     else:
-        top = ", ".join(result.top_missing_skills) if result.top_missing_skills else "N/A"
+        top = (
+            ", ".join(result.top_missing_skills) if result.top_missing_skills else "N/A"
+        )
         reply = (
             f"I found {len(result.gaps)} skill gaps in your resume.\n\n"
             f"Top missing skills: {top}\n\n"
