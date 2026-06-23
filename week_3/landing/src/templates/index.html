@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Skill Gap Detector — AI Pipeline</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <style>
+      :root {
+        --accent: #6c63ff;
+      }
+      body {
+        background-color: #f8f9fa;
+      }
+      .hero {
+        background: linear-gradient(135deg, #6c63ff 0%, #48c6ef 100%);
+        color: white;
+        padding: 6rem 0 4rem;
+      }
+      .section-title {
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .pipeline-step {
+        border-left: 4px solid var(--accent);
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .pipeline-step h5 {
+        font-weight: 700;
+      }
+      .badge-week {
+        background-color: var(--accent);
+        color: white;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+      }
+      .tech-badge {
+        background-color: #e9e8ff;
+        color: var(--accent);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.8rem;
+        margin: 2px;
+        display: inline-block;
+      }
+      footer {
+        background-color: #1a1a2e;
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hero -->
+    <section class="hero text-center">
+      <div class="container">
+        <h1 class="display-4 fw-bold mb-3">Skill Gap Detector</h1>
+        <p class="lead mb-4">
+          A full-stack AI pipeline that scrapes job listings, tags them with tech stacks,
+          and helps you discover what skills you need to land your next role.
+        </p>
+        <a href="#pipeline" class="btn btn-light btn-lg px-5" style="color: var(--accent);">
+          See How It Works
+        </a>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-8 text-center">
+            <h2 class="section-title mb-3">What is this?</h2>
+            <p class="text-muted fs-5">
+              This project was built as part of the <strong>kyouth FX Digital Skills Program</strong>.
+              Over 3 weeks, we built a data engineering pipeline, an AI layer, and a full-stack
+              chat application — all containerized with Docker.
+            </p>
+            <p class="text-muted fs-5">
+              You paste your resume or upload a PDF, and the AI compares your skills against
+              real Malaysian tech job listings to tell you exactly what you're missing.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pipeline -->
+    <section class="py-5 bg-white" id="pipeline">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">The AI Pipeline</h2>
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <div class="card p-4 h-100">
+              <span class="badge-week mb-3">Week 1</span>
+              <div class="pipeline-step">
+                <h5>Data Pipeline</h5>
+                <p class="text-muted">
+                  Scraped 83 real job listings from Jobstreet Malaysia in <code>.mhtml</code> format.
+                  Processed them through a <strong>Medallion Architecture</strong> (Bronze → Silver → Gold)
+                  into a clean SQLite database with quality checks and deduplication.
+                </p>
+                <div>
+                  <span class="tech-badge">Python</span>
+                  <span class="tech-badge">SQLite</span>
+                  <span class="tech-badge">BeautifulSoup</span>
+                  <span class="tech-badge">Pydantic</span>
+                  <span class="tech-badge">uv</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card p-4 h-100">
+              <span class="badge-week mb-3">Week 2</span>
+              <div class="pipeline-step">
+                <h5>AI Layer</h5>
+                <p class="text-muted">
+                  Used <strong>Google Gemini</strong> to extract tech stacks from job descriptions
+                  and resume text. Built an MCP (Model Context Protocol) server to abstract database
+                  access. Detected skill gaps by comparing resume skills against job market demand.
+                </p>
+                <div>
+                  <span class="tech-badge">Gemini API</span>
+                  <span class="tech-badge">FastMCP</span>
+                  <span class="tech-badge">LangChain</span>
+                  <span class="tech-badge">asyncio</span>
+                  <span class="tech-badge">Pydantic</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card p-4 h-100">
+              <span class="badge-week mb-3">Week 3</span>
+              <div class="pipeline-step">
+                <h5>Full-Stack App</h5>
+                <p class="text-muted">
+                  Built a containerized chat application with a <strong>FastAPI</strong> frontend
+                  and backend. Users can chat or upload a PDF resume to get skill gap analysis.
+                  Includes a Charts.js dashboard for job market visualization.
+                </p>
+                <div>
+                  <span class="tech-badge">FastAPI</span>
+                  <span class="tech-badge">Docker</span>
+                  <span class="tech-badge">Bootstrap</span>
+                  <span class="tech-badge">Charts.js</span>
+                  <span class="tech-badge">pdf.js</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to use -->
+    <section class="py-5">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">How to Use</h2>
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card p-4">
+              <h5 class="fw-bold mb-3">Quick Start with Docker</h5>
+              <pre class="bg-light p-3 rounded"><code># 1. Clone the repo
+git clone https://github.com/Eiqbal25/kyouth-data-ai.git
+cd kyouth-data-ai
+
+# 2. Add your Gemini API key
+mkdir week_3/secrets
+echo "your_api_key" > week_3/secrets/google_api_key.txt
+
+# 3. Run
+cd week_3
+docker compose up --build</code></pre>
+              <p class="text-muted mt-3 mb-0">
+                Then open <a href="http://localhost:8000" target="_blank">http://localhost:8000</a>
+                and start chatting.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-8">
+            <div class="card p-4">
+              <h5 class="fw-bold mb-3">Using the Chat</h5>
+              <ol class="text-muted">
+                <li class="mb-2">Type your skills or paste your resume text into the chat box</li>
+                <li class="mb-2">Or click the upload icon to upload a PDF resume</li>
+                <li class="mb-2">Press Send — the AI extracts your skills and compares them against 83 real job listings</li>
+                <li class="mb-2">Get your top missing skills and full gap list instantly</li>
+                <li>Visit <code>/dashboard</code> to explore the job market data with charts</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section class="py-5 bg-white">
+      <div class="container">
+        <h2 class="section-title text-center mb-5">Architecture</h2>
+        <div class="row justify-content-center">
+          <div class="col-md-10">
+            <div class="card p-4">
+              <pre class="bg-light p-3 rounded mb-0"><code>Browser
+  │
+  │ HTTP :8000
+  ▼
+Frontend Container (FastAPI + Jinja2)
+  │  serves chat UI and dashboard
+  │
+  │ HTTP :8001 (via Docker bridge network)
+  ▼
+Backend Container (FastAPI)
+  │  POST /chat
+  │  calls find_skill_gaps()
+  │
+  ├── Gemini API (extract resume skills)
+  │
+  └── MCP Server (db_server.py)
+        │
+        └── jobs.db (SQLite — 83 tagged jobs)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center">
+      <div class="container">
+        <p class="mb-1">Built by <strong style="color: white;">Eiqbal</strong> — kyouth FX Digital Skills Program 2026</p>
+        <a href="https://github.com/Eiqbal25/kyouth-data-ai" class="text-decoration-none" style="color: #6c63ff;">
+          GitHub Repository
+        </a>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
