@@ -152,6 +152,35 @@ Click the upload icon, select a PDF resume, then send a message. The PDF text is
 
 ---
 
+## Landing Page
+
+A public landing page explaining the full AI pipeline is deployed at:
+
+**https://landing-production-bff4.up.railway.app/**
+
+It covers:
+- What the project does
+- How each week contributes to the pipeline
+- How to set up and use the app
+- The system architecture
+
+### Run landing page locally
+
+```bash
+cd week_3/landing
+uv sync
+uv run uvicorn --app-dir src app:app --port 8080
+```
+
+### Run with Docker
+
+```bash
+docker pull eiqbal25/landing:1.0
+docker run -p 8080:8080 eiqbal25/landing:1.0
+```
+
+Docker Hub: https://hub.docker.com/r/eiqbal25/landing
+
 ## API / Function Reference
 
 ### Backend: `POST /chat`

@@ -348,3 +348,8 @@ In Week 3, Docker Compose was chosen over Kubernetes for simplicity. A single co
 - Automated test suite with CI/CD pipeline
 - Server-side PDF parsing supporting complex layouts
 - Caching LLM responses to avoid re-tagging unchanged job descriptions
+
+### Live Demo
+
+- **Landing Page**: https://landing-production-bff4.up.railway.app/
+- **Docker Hub**: https://hub.docker.com/r/eiqbal25/landing
