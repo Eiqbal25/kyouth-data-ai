@@ -55,7 +55,21 @@ git clone https://github.com/Eiqbal25/kyouth-data-ai.git
 cd kyouth-data-ai
 ```
 
+### Changing the database
+
+By default the app uses `week_1/data/3_gold/jobs.db`. To use a different database, edit `week_3/docker-compose.yml` and change the volume path in both the `frontend` and `backend` services:
+
+```yaml
+# Change this line in both frontend and backend services:
+- ../week_1/data/3_gold/jobs.db:/data/jobs.db:ro
+
+# Example: use Week 2 eval database instead:
+- ../week_2/data/jobs_d3_eval.db:/data/jobs.db:ro
+```
+
 ---
+
+The database must have a `jobs` table with `tech_stack` column already populated. Run `tag_data.py` from Week 2 first if needed.
 
 ## Week 1 Setup and Usage
 
