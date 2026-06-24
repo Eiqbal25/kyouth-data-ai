@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - BACKEND_URL=http://localhost:8001
+      - BACKEND_URL=http://backend:8001
     volumes:
       - ../week_1/data/3_gold/jobs.db:/data/jobs.db:ro
     networks:
@@ -20,8 +20,6 @@ services:
     pull_policy: build
     build:
       context: backend
-    ports:
-      - "8001:8001"
     environment:
       - GOOGLE_API_KEY=/run/secrets/google_api_key
       - DB_PATH=/data/jobs.db

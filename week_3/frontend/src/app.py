@@ -1,15 +1,19 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 from pathlib import Path
 from dotenv import load_dotenv
 import os
 import sqlite3
+import httpx
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI()
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent / "templates")
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001")
 
 DB_PATH = (
     Path("/data/jobs.db")
@@ -30,15 +34,20 @@ def get_db():
 
 @app.get("/")
 async def index(request: Request):
-    backend_url = os.getenv("BACKEND_URL", "http://localhost:8001")
-    return templates.TemplateResponse(
-        request, "chat_page.html", {"backend_url": backend_url}
-    )
+    return templates.TemplateResponse(request, "chat_page.html", {})
 
 
 @app.get("/dashboard")
 async def dashboard(request: Request):
     return templates.TemplateResponse(request, "dashboard.html", {})
+
+
+@app.post("/api/chat")
+async def proxy_chat(request: Request):
+    body = await request.json()
+    async with httpx.AsyncClient(timeout=300) as client:
+        response = await client.post(f"{BACKEND_URL}/chat", json=body)
+    return JSONResponse(response.json())
 
 
 @app.get("/api/quality-distribution")
